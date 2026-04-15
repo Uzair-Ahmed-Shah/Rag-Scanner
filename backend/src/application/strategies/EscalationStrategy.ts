@@ -1,7 +1,6 @@
-import {ILLMService, BaseMessage} from '../../domain/interfaces/ILLMService'
+import {BaseMessage} from '../../domain/interfaces/ILLMService'
 import {ITicketRepository} from '../../domain/interfaces/ITicketRepository'
 import { IRoutingStrategy, RouteResponse } from './IRoutingStrategy'
-import type IRoutingStrategy = require('./IRoutingStrategy')
 
 export class EscalationStrategy implements IRoutingStrategy {
     constructor (private ticketRepo: ITicketRepository){}
