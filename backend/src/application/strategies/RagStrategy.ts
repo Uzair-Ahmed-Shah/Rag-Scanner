@@ -32,7 +32,7 @@ export class RagStrategy implements IRoutingStrategy {
 
         const grade = await this.llmService.generateStructuredOutput<RelevanceGrade>(
             [{role:'system', content: gradePrompt}],
-            {role: 'user' , properties: {isRelevant: {type: 'boolean'}, reasoning: {type: 'string'}}}
+            {type: 'object' , properties: {isRelevant: {type: 'boolean'}, reasoning: {type: 'string'}}}
         )
 
         if (!grade.isRelevant){
