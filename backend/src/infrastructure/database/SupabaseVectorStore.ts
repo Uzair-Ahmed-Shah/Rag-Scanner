@@ -33,7 +33,7 @@ export class SupabaseVectorStore implements IVectorStore {
         })
 
         if (error) {
-            console.error('"Supabase Search Error:', error)
+            console.error('Supabase Search Error:', error)
             throw new Error("Failed to search vectors in Supabase");
         }
 
