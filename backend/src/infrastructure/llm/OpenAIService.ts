@@ -15,6 +15,7 @@ export class OpenAIService implements ILLMService {
             messages: messages as any,
             temperature: temperature
         })
+        return response.choices[0]?.message?.content || '';
     }
 
     async generateStructuredOutput<T>(messages: BaseMessage[], schema: any): Promise<T> {

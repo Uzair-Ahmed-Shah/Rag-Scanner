@@ -4,6 +4,7 @@ import { IPdfParser } from '../../domain/interfaces/IPdfParser'
 export class PdfParseService implements IPdfParser {
     async parse(buffer: Buffer): Promise<string> {
         try {
+            // @ts-ignore
             const data = await pdfParse(buffer);
 
             const cleanText = data.text
