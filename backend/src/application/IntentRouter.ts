@@ -37,8 +37,10 @@ export class IntentRouter {
                 {role: 'system', content: systemPrompt},
                 {role: 'user', content : query}
             ],
-            {type: 'object', properties: {intent: {type: 'string'}, confidence: {type: 'number'}}}
+            { type: "object", properties: { intent: { type: "string" }, confidence: { type: "number" } } }
         );
+
+        console.log(`[Intent Router] User said: "${query}" => Classified as: ${classification.intent} (${(classification.confidence * 100).toFixed(0)}% confident)`);
 
         const strategy = this.strategies[classification.intent];
 
@@ -46,6 +48,9 @@ export class IntentRouter {
             throw new Error (`Strategy for intent ${classification.intent} not found`)
         }
 
-        return await strategy.execute(query, []);
+        const result = await strategy.execute(query, []);
+        // @ts-ignore
+        result.debug_intent = classification.intent;
+        return result;
     }
 }
