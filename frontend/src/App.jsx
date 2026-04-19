@@ -14,8 +14,21 @@ const stringToUUID = (str) => {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 };
 
+const getInitialUserId = () => {
+  const stored = localStorage.getItem('userId');
+  if (!stored) return '';
+  // Verify it's actually a UUID so old cached usernames don't break the app
+  const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(stored);
+  if (!isValidUUID) {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    return '';
+  }
+  return stored;
+};
+
 function App() {
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  const [userId, setUserId] = useState(getInitialUserId());
   const [tempUserId, setTempUserId] = useState('');
 
   const [query, setQuery] = useState('');
