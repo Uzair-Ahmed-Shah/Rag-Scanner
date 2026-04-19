@@ -4,6 +4,16 @@ import { UploadCloud, MessageSquare, LogOut, CheckCircle, Bot } from 'lucide-rea
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+const stringToUUID = (str) => {
+  const hex = Array.from(str)
+    .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+    .join('')
+    .padEnd(32, '0')
+    .slice(0, 32);
+  
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+};
+
 function App() {
   const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
   const [tempUserId, setTempUserId] = useState('');
@@ -17,14 +27,17 @@ function App() {
   const handleLogin = (e) => {
     e.preventDefault();
     if (tempUserId.trim()) {
-      setUserId(tempUserId.trim());
-      localStorage.setItem('userId', tempUserId.trim());
+      const uuidFormatted = stringToUUID(tempUserId.trim());
+      setUserId(uuidFormatted);
+      localStorage.setItem('userId', uuidFormatted);
+      localStorage.setItem('userName', tempUserId.trim());
     }
   };
 
   const handleLogout = () => {
     setUserId('');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
     setChatHistory([]);
   };
 
@@ -109,8 +122,11 @@ function App() {
            <div className="flex items-center gap-3 text-blue-600 font-bold text-xl mb-4">
             <Bot size={24} /> RAG Scanner
            </div>
-           <div className="text-sm bg-gray-50 p-3 rounded border text-gray-700 flex justify-between items-center">
-             <span>Active User: <span className="font-mono text-xs ml-1 bg-gray-200 px-1 py-0.5 rounded">{userId}</span></span>
+           <div className="text-sm bg-gray-50 p-3 rounded border text-gray-700 flex flex-col gap-1">
+             <span className="flex justify-between items-center">
+               Active User: <span className="font-mono text-xs ml-1 bg-gray-200 px-1 py-0.5 rounded">{localStorage.getItem('userName') || 'Demo'}</span>
+             </span>
+             <span className="text-[10px] text-gray-400 font-mono truncate">{userId}</span>
            </div>
         </div>
 
@@ -155,7 +171,6 @@ function App() {
         </div>
       </div>
 
-      {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-gray-50 max-h-screen">
         <div className="p-6 border-b bg-white shadow-sm">
           <h1 className="text-xl font-bold text-gray-800">Support Orchestrator</h1>
@@ -178,7 +193,7 @@ function App() {
                 }`}>
                   <p className="whitespace-pre-wrap">{msg.content}</p>
                   {msg.intent && (
-                    <div className="mt-3 text-xs flex gap-1 items-center bg-gray-100 text-gray-600 w-fit px-2 py-1 rounded inline-block">
+                    <div className="mt-3 text-xs flex gap-1 items-center bg-gray-100 text-gray-600 w-fit px-2 py-1 rounded">
                       <span className="font-semibold text-[10px] uppercase">Strategy:</span> {msg.intent}
                     </div>
                   )}
