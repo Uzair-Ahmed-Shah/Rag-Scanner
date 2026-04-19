@@ -28,7 +28,7 @@ export class SupabaseVectorStore implements IVectorStore {
     async similaritySearch (queryEmbedding: number[], topK: number = 5): Promise<IDocumentChunk[]> {
         const { data, error } = await this.client.rpc('match_document_chunks', {
             query_embedding: queryEmbedding,
-            match_threshold: 0.5,
+            match_threshold: 0.1, // Lowered from 0.5 to 0.1 to allow more relaxed math matches
             match_count: topK,
         })
 

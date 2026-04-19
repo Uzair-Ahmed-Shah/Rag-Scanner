@@ -18,7 +18,18 @@ export class RagStrategy implements IRoutingStrategy {
 
     async execute(query: string, chatHistory: BaseMessage[]): Promise<RouteResponse> {
         const queryVector = await this.embeddingService.generateEmbedding(query)
-        const retrievedChunks = await this.vectorStore.similaritySearch(queryVector, 3);
+        const retrievedChunksRaw = await this.vectorStore.similaritySearch(queryVector, 15);
+        
+        const retrievedChunks: IDocumentChunk[] = [];
+        const seenTexts = new Set<string>();
+        for (const chunk of retrievedChunksRaw) {
+            if (!seenTexts.has(chunk.text)) {
+                seenTexts.add(chunk.text);
+                retrievedChunks.push(chunk);
+                if (retrievedChunks.length >= 5) break;
+            }
+        }
+
         const contextText = retrievedChunks.map(chunks => chunks.text).join('\n\n');
 
         const gradePrompt = `
@@ -37,7 +48,15 @@ export class RagStrategy implements IRoutingStrategy {
 
         if (!grade.isRelevant){
             console.log(`[RAG Agent] Context irrelevant. Reason: ${grade.reasoning}. Escalating...`);
-            return await this.fallbackStrategy.execute(query, chatHistory);
+            const fallbackResponse = await this.fallbackStrategy.execute(query, chatHistory);
+            // @ts-ignore
+            fallbackResponse.debug_rag = {
+                contextTextLength: contextText.length,
+                retrievedChunksCount: retrievedChunks.length,
+                reasoning: grade.reasoning,
+                chunks: retrievedChunks
+            };
+            return fallbackResponse;
         }
 
         const answerPrompt = `
@@ -58,7 +77,12 @@ export class RagStrategy implements IRoutingStrategy {
         return {
             response: finalAnswer,
             escalated: false,
-            confidenceScore: 0.9
+            confidenceScore: 0.9,
+            // @ts-ignore
+            debug_rag: {
+                retrievedChunksCount: retrievedChunks.length,
+                chunks: retrievedChunks
+            }
         }
     }
 }

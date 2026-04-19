@@ -3,10 +3,14 @@ import {ILLMService, BaseMessage} from '../../domain/interfaces/ILLMService'
 
 export class OpenAIService implements ILLMService {
     private client: OpenAI;
-    private model = 'openai/gpt-oss-120b';
+    private model = 'llama-3.3-70b-versatile';
 
-    constructor (apiKey: string) {
-        this.client = new OpenAI({apiKey});
+    constructor(apiKey: string) {
+        // Automatically hook up to Groq's Base URL and pass the API key
+        this.client = new OpenAI({
+            apiKey: apiKey,
+            baseURL: "https://api.groq.com/openai/v1"
+        });
     }
 
     async generateCompletion(messages: BaseMessage[], temperature: number = 0.5): Promise<string> {
@@ -23,14 +27,7 @@ export class OpenAIService implements ILLMService {
             model: this.model,
             messages: messages as any,
             temperature: 0.0,
-            response_format: {
-                type: 'json_schema',
-                json_schema: {
-                    name: 'intent_response',
-                    strict: true,
-                    schema: schema
-                }
-            }
+            response_format: { type: 'json_object' }
         })
 
         const content = response.choices[0]?.message?.content || '{}'

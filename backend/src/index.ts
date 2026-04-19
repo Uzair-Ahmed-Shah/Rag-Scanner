@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 
-import {OpenAIService } from './infrastructure/llm/OpenAIService';
+import { OpenAIService } from './infrastructure/llm/OpenAIService';
 import { SupabaseVectorStore} from './infrastructure/database/SupabaseVectorStore'
 import {SupabaseTicketRepository} from './infrastructure/database/SupabaseTicketRepository';
 import {TransformersEmbeddingService} from './infrastructure/embeddings/TransformersEmbeddingService'
