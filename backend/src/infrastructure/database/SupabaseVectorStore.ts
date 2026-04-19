@@ -8,7 +8,29 @@ export class SupabaseVectorStore implements IVectorStore {
         this.client = createClient(url, key);
     }
 
+    /**
+     * Ensures a user record exists in the `users` table.
+     * The `documents` table has a FK to `users(user_id)`, so we must
+     * register the user before inserting any documents.
+     */
+    private async ensureUserExists(userId: string): Promise<void> {
+        const { error } = await this.client
+            .from('users')
+            .upsert(
+                { user_id: userId, email: `${userId}@rag-scanner.local` },
+                { onConflict: 'user_id' }
+            );
+
+        if (error) {
+            console.error("Supabase Ensure User Error:", error);
+            throw new Error("Failed to ensure user exists in Supabase");
+        }
+    }
+
     async registerDocument(userId: string, fileName: string): Promise<string> {
+        // Ensure the user exists (satisfies FK constraint)
+        await this.ensureUserExists(userId);
+
         // Delete the old document if it exists (ON DELETE CASCADE will automatically wipe old chunks)
         await this.client
             .from('documents')
@@ -61,8 +83,8 @@ export class SupabaseVectorStore implements IVectorStore {
             throw new Error("Failed to search vectors in Supabase");
         }
 
-        return data.map((row: any) => ({
-            id: row.id.toString(),
+        return (data || []).map((row: any) => ({
+            id: row.chunk_id?.toString(),
             text: row.content,
             metadata: row.metadata
         }));
