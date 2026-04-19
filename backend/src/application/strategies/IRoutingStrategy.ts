@@ -7,5 +7,5 @@ export interface RouteResponse {
 }
 
 export interface IRoutingStrategy {
-    execute (query: string, chatHistory: BaseMessage[]): Promise<RouteResponse>
+    execute (query: string, chatHistory: BaseMessage[], userId?: string): Promise<RouteResponse>
 }

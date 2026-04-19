@@ -21,7 +21,7 @@ export class IntentRouter {
         }
     }
 
-    async routeQuery (query: string): Promise<RouteResponse> {
+    async routeQuery(query: string, userId?: string): Promise<any> {
         const systemPrompt = `
             You are an Intent Classifier for a corporate support system. 
             Classify the user's query into one of these three intents:
@@ -48,7 +48,7 @@ export class IntentRouter {
             throw new Error (`Strategy for intent ${classification.intent} not found`)
         }
 
-        const result = await strategy.execute(query, []);
+        const result = await strategy.execute(query, [], userId);
         // @ts-ignore
         result.debug_intent = classification.intent;
         return result;

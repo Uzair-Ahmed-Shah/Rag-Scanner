@@ -16,9 +16,10 @@ export class RagStrategy implements IRoutingStrategy {
         private fallbackStrategy: IRoutingStrategy
     ) {}
 
-    async execute(query: string, chatHistory: BaseMessage[]): Promise<RouteResponse> {
-        const queryVector = await this.embeddingService.generateEmbedding(query)
-        const retrievedChunksRaw = await this.vectorStore.similaritySearch(queryVector, 15);
+    async execute(query: string, chatHistory: BaseMessage[], userId?: string): Promise<RouteResponse> {
+        const _userId = userId || "mock-user-123";
+        const queryVector = await this.embeddingService.generateEmbedding(query);
+        const retrievedChunksRaw = await this.vectorStore.similaritySearch(queryVector, 15, _userId);
         
         const retrievedChunks: IDocumentChunk[] = [];
         const seenTexts = new Set<string>();
