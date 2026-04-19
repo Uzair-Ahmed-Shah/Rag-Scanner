@@ -11,10 +11,13 @@ export class DocumentIngestionService {
         private embeddingService: IEmbeddingService,
         private vectorStore: IVectorStore
     ) {}
-    async processPdfBuffer (buffer: Buffer, fileName: string): Promise<void> {
-        console.log(`[Ingestion] Starting process for ${fileName}`)
+    async processPdfBuffer (buffer: Buffer, fileName: string, userId: string = "mock-user-123"): Promise<void> {
+        console.log(`[Ingestion] Starting process for ${fileName} User: ${userId}`)
         const rawText = await this.pdfParser.parse(buffer);
         console.log(`[Ingestion] Split into ${rawText.length} characters`)
+        
+        const documentId = await this.vectorStore.registerDocument(userId, fileName);
+
         const textChunks = this.textSplitter.split(rawText, 1000, 200)
         console.log(`[Ingestion] Split into ${textChunks.length} chunks.`);
 
@@ -24,10 +27,10 @@ export class DocumentIngestionService {
             const chunkText = textChunks[i]!;
 
             const vector = await this.embeddingService.generateEmbedding(chunkText);
-
             documentChunks.push({
                 text: chunkText,
                 embedding: vector,
+                documentId: documentId,
                 metadata: {
                     source:fileName,
                     chunkIndex: i,

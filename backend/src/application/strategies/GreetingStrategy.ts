@@ -4,7 +4,7 @@ import { IRoutingStrategy, RouteResponse} from './IRoutingStrategy'
 export class GreetingStrategy implements IRoutingStrategy {
     constructor (private llmService: ILLMService){}
 
-    async execute (query: string, chatHistory: BaseMessage[]): Promise<RouteResponse> {
+    async execute (query: string, chatHistory: BaseMessage[], userId?: string): Promise<RouteResponse> {
         const systemPrompt = `
             You are a helpful, professional customer support assistant. 
             The user is greeting you or making small talk.

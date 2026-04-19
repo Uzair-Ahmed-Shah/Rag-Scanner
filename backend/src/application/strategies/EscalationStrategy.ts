@@ -5,10 +5,9 @@ import { IRoutingStrategy, RouteResponse } from './IRoutingStrategy'
 export class EscalationStrategy implements IRoutingStrategy {
     constructor (private ticketRepo: ITicketRepository){}
 
-    async execute(query: string, chatHistory: BaseMessage[]): Promise<RouteResponse>{
-
+    async execute(query: string, chatHistory: BaseMessage[], userId?: string): Promise<RouteResponse>{
         const ticketData = {
-            userId: 'mock-user-123',
+            userId: userId || 'mock-user-123',
             query: query,
             chatHistory: chatHistory,
             status: 'OPEN' as const
