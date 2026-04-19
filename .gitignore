@@ -12,3 +12,4 @@ output3.json
 test-frontend.html
 test-intent.ts
 test-supabase.ts
+backend/test-rls-fix.ts

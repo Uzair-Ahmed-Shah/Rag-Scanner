@@ -19,15 +19,29 @@ import {ChatController} from './presentation/ChatController'
 
 dotenv.config()
 
+// --- Validate critical env vars ---
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !GROQ_API_KEY) {
+    console.error('FATAL: Missing required environment variables.');
+    console.error('  SUPABASE_URL:', SUPABASE_URL ? '✓' : '✗ MISSING');
+    console.error('  SUPABASE_SERVICE_ROLE_KEY:', SUPABASE_SERVICE_ROLE_KEY ? '✓' : '✗ MISSING');
+    console.error('  GROQ_API_KEY:', GROQ_API_KEY ? '✓' : '✗ MISSING');
+    process.exit(1);
+}
+
 const app = express()
 app.use(cors())
 app.use(express.json());
 
 const upload = multer({storage: multer.memoryStorage()})
 
-const supabaseClient = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
-const llmService = new OpenAIService(process.env.GROQ_API_KEY!);
-const vectorStore = new SupabaseVectorStore(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
+// Use service_role key — bypasses RLS for server-side DB operations
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const llmService = new OpenAIService(GROQ_API_KEY);
+const vectorStore = new SupabaseVectorStore(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 const ticketRepo = new SupabaseTicketRepository(supabaseClient);
 
 const embeddingService = new TransformersEmbeddingService();
