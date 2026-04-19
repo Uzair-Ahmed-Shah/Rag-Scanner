@@ -1,3 +1,14 @@
 node_modules/
 dist/
 .env
+
+# Temp and Test files
+backend/all_project_code.txt
+debug_projects.json
+debug_projects_fixed.json
+output.json
+output2.json
+output3.json
+test-frontend.html
+test-intent.ts
+test-supabase.ts

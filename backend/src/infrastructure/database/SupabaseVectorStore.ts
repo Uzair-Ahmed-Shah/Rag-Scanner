@@ -8,8 +8,31 @@ export class SupabaseVectorStore implements IVectorStore {
         this.client = createClient(url, key);
     }
 
+    async registerDocument(userId: string, fileName: string): Promise<string> {
+        // Delete the old document if it exists (ON DELETE CASCADE will automatically wipe old chunks)
+        await this.client
+            .from('documents')
+            .delete()
+            .match({ user_id: userId, file_name: fileName });
+
+        // Insert the new document record and fetch its new ID
+        const { data, error } = await this.client
+            .from('documents')
+            .insert({ user_id: userId, file_name: fileName })
+            .select('document_id')
+            .single();
+
+        if (error || !data) {
+            console.error("Supabase Register Document Error:", error);
+            throw new Error("Failed to register document in Supabase");
+        }
+
+        return data.document_id;
+    }
+
     async upsertChunks (chunks: IDocumentChunk[]): Promise<void> {
         const payload = chunks.map(chunk => ({
+            document_id: chunk.documentId, // Map our new document constraint
             content: chunk.text,
             metadata: chunk.metadata,
             embedding: chunk.embedding
@@ -17,7 +40,7 @@ export class SupabaseVectorStore implements IVectorStore {
 
         const { error } = await this.client
         .from('document_chunks')
-        .upsert(payload);
+        .insert(payload); // Change from upsert to insert since chunks are brand new
 
         if (error) {
             console.error("Supabase Upsert Error:", error);
@@ -25,11 +48,12 @@ export class SupabaseVectorStore implements IVectorStore {
 
         }
     }
-    async similaritySearch (queryEmbedding: number[], topK: number = 5): Promise<IDocumentChunk[]> {
+    async similaritySearch (queryEmbedding: number[], topK: number = 5, userId: string): Promise<IDocumentChunk[]> {
         const { data, error } = await this.client.rpc('match_document_chunks', {
             query_embedding: queryEmbedding,
             match_threshold: 0.1, // Lowered from 0.5 to 0.1 to allow more relaxed math matches
             match_count: topK,
+            search_user_id: userId // Inject multi-tenant restriction
         })
 
         if (error) {
