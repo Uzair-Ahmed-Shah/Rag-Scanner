@@ -31,7 +31,17 @@ export class RagStrategy implements IRoutingStrategy {
             }
         }
 
-        const contextText = retrievedChunks.map(chunks => chunks.text).join('\n\n');
+        // Build context with source labels so the LLM can cite them
+        const contextText = retrievedChunks.map((chunk, i) => {
+            const src = chunk.metadata?.source || 'unknown';
+            return `[Source: ${src}, Chunk ${chunk.metadata?.chunkIndex ?? i}]\n${chunk.text}`;
+        }).join('\n\n');
+
+        // Extract unique sources for the response
+        const sources = retrievedChunks.map(c => ({
+            fileName: c.metadata?.source || 'unknown',
+            chunkIndex: c.metadata?.chunkIndex ?? 0,
+        }));
 
         const gradePrompt = `
             You are a strict relevance grader. 
@@ -62,7 +72,7 @@ export class RagStrategy implements IRoutingStrategy {
 
         const answerPrompt = `
             You are a helpful corporate assistant. Answer the user's query ONLY using the context provided.
-            Do not make up information.
+            Do not make up information. When referencing information, mention which source document it came from.
             
             Context: """${contextText}"""
         `
@@ -80,6 +90,7 @@ export class RagStrategy implements IRoutingStrategy {
             escalated: false,
             confidenceScore: 0.9,
             // @ts-ignore
+            sources: sources,
             debug_rag: {
                 retrievedChunksCount: retrievedChunks.length,
                 chunks: retrievedChunks

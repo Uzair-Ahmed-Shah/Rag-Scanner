@@ -1,0 +1,21 @@
+Uzair Ahmed Shah
+Software Engineer | Computer Science Student
+
+Skills: TypeScript, Python, Node.js, React, PostgreSQL, Docker, Machine Learning
+
+Education:
+BSc Computer Science, University of Karachi, 2022-2026, GPA: 3.7
+
+Experience:
+- Software Engineering Intern, TechCorp Pvt Ltd, 2024
+  Built REST APIs using Node.js and Express
+  Implemented ML models for data classification
+
+- Freelance Developer, 2023-present
+  Delivered 12+ web applications for clients worldwide
+
+Projects:
+- RAG Scanner: Agentic document analysis system using LLMs, pgvector, transformers.js
+- AI News Aggregator: Automated news pipeline with NLP categorization
+
+Contact: uzair@example.com | github.com/uzairahmedshah

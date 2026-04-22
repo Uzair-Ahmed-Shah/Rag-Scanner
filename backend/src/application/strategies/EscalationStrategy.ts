@@ -6,19 +6,23 @@ export class EscalationStrategy implements IRoutingStrategy {
     constructor (private ticketRepo: ITicketRepository){}
 
     async execute(query: string, chatHistory: BaseMessage[], userId?: string): Promise<RouteResponse>{
-        const ticketData = {
-            userId: userId || 'mock-user-123',
-            query: query,
-            chatHistory: chatHistory,
-            status: 'OPEN' as const
-        };
+        if (!userId) {
+            throw new Error('userId is required for escalation');
+        }
 
-        const ticketId = await this.ticketRepo.createTicket(ticketData);
+        const ticketId = await this.ticketRepo.createTicket({
+            userId,
+            query,
+            chatHistory,
+            status: 'OPEN' as const
+        });
 
         return {
-            response: `I understand you need further assistance. I have opened a support ticket (ID: ${ticketId}) and a human agent will be with you shortly.`,
+            response: `Your query has been escalated. A support ticket has been created.`,
             escalated: true,
-            confidenceScore: 1.0
-        }
+            confidenceScore: 1.0,
+            // @ts-ignore
+            ticketId,
+        };
     }
 }

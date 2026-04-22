@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { IVectorStore, IDocumentChunk } from '../../domain/interfaces/VectorStoreInterface';
+import { IVectorStore, IDocumentChunk, IDocumentRecord } from '../../domain/interfaces/VectorStoreInterface';
 
 export class SupabaseVectorStore implements IVectorStore {
     private client: SupabaseClient;
@@ -89,5 +89,36 @@ export class SupabaseVectorStore implements IVectorStore {
             metadata: row.metadata
         }));
 
+    }
+
+    async listDocuments(userId: string): Promise<IDocumentRecord[]> {
+        const { data, error } = await this.client
+            .from('documents')
+            .select('document_id, file_name, upload_date')
+            .eq('user_id', userId)
+            .order('upload_date', { ascending: false });
+
+        if (error) {
+            console.error('Supabase List Documents Error:', error);
+            throw new Error('Failed to list documents');
+        }
+
+        return (data || []).map((row: any) => ({
+            documentId: row.document_id,
+            fileName: row.file_name,
+            uploadDate: row.upload_date,
+        }));
+    }
+
+    async deleteDocument(documentId: string): Promise<void> {
+        const { error } = await this.client
+            .from('documents')
+            .delete()
+            .eq('document_id', documentId);
+
+        if (error) {
+            console.error('Supabase Delete Document Error:', error);
+            throw new Error('Failed to delete document');
+        }
     }
 }
