@@ -13,3 +13,6 @@ test-frontend.html
 test-intent.ts
 test-supabase.ts
 backend/test-rls-fix.ts
+
+# Ignore static images as we are using Mermaid
+*.png
